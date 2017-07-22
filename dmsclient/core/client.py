@@ -17,7 +17,7 @@ class DMSClient:
     def _construct_comments(self, dicts):
         profiles = {p.id: p for p in self.profiles}
         return [Comment(profile=profiles[d['profile']],
-                          comment=d['comment']) for d in dicts]
+                        comment=d['comment']) for d in dicts]
 
     @property
     def profiles(self):

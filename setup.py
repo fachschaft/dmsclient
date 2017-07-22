@@ -1,10 +1,10 @@
 from setuptools import setup
 
 setup(name='dmsclient',
-      version='0.1',
+      version='1.0',
       description='Library and command line interface to interact with Drink Management System of Fachschaft TF Uni Freiburg.',
       author='David-Elias Künstle',
-      author_email='david-elias@kuenstle.me',
+      author_email='dmsclient@kuenstle.me',
       packages=['dmsclient'],
       install_requires=[
           'docopt>=0.6.0',
