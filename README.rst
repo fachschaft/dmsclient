@@ -81,7 +81,8 @@ Example code:
 
 
    token = 'XxxxxXXXxxxxxXXXXxxxxxxxXXX'
-   dms = DMSClient(token)
+   api_endpoint = 'https://dms.fachschaft.tf/api'
+   dms = DMSClient(token, api_endpoint)
    order_random_stuff_for_last_customer(dms)
 
 Authors

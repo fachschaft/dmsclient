@@ -191,7 +191,8 @@ def load_token():
 def main():
     args = docopt(__doc__, version='Naval Fate 2.0')
     token = load_token()
-    dms = DMSClient(token)
+    api_endpoint = 'https://dms.fachschaft.tf/api'
+    dms = DMSClient(token, api_endpoint)
 
     if args['show']:
         show(dms, args)

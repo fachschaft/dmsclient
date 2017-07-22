@@ -3,10 +3,9 @@ from dmsclient.core.objects import Profile, Product, Comment, Event, SaleEntry
 
 
 class DMSClient:
-    API_ENDPOINT = 'https://dms.fachschaft.tf/api'
-
-    def __init__(self, token):
+    def __init__(self, token, api_endpoint):
         self.token = token
+        self.api_endpoint = api_endpoint
 
     def _construct_sale_entries(self, dicts):
         profiles = {p.id: p for p in self.profiles}
@@ -112,7 +111,7 @@ class DMSClient:
                 raise e
 
     def _get(self, api, constructor=None):
-        r = requests.get(self.API_ENDPOINT + api,
+        r = requests.get(self.api_endpoint + api,
                          headers={'Authorization': 'Token '+self.token})
 
         if r.status_code == 200:
@@ -128,7 +127,7 @@ class DMSClient:
             self._handle_error(r)
 
     def _post(self, api, data):
-        r = requests.post(self.API_ENDPOINT + api,
+        r = requests.post(self.api_endpoint + api,
                           json=data,
                           headers={'Authorization': 'Token '+self.token})
         if r.status_code == 201:
