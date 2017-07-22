@@ -20,7 +20,7 @@ from distutils.util import strtobool
 from docopt import docopt
 from tabulate import tabulate
 
-from dmsclient import DMSClient
+from dmsclient import DMSClient, __version__
 
 
 def print_users(users):
@@ -189,7 +189,7 @@ def load_token():
 
 
 def main():
-    args = docopt(__doc__, version='Naval Fate 2.0')
+    args = docopt(__doc__, version='dmsclient {}'.format(__version__))
     token = load_token()
     api_endpoint = 'https://dms.fachschaft.tf/api'
     dms = DMSClient(token, api_endpoint)

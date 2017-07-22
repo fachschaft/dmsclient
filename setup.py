@@ -1,11 +1,15 @@
 from setuptools import setup
 
+
+pkg = __import__('dmsclient')
+
 setup(name='dmsclient',
-      version='1.0',
-      description='Library and command line interface to interact with Drink Management System of Fachschaft TF Uni Freiburg.',
-      author='David-Elias Künstle',
-      author_email='dmsclient@kuenstle.me',
-      packages=['dmsclient'],
+      version=pkg.__version__,
+      description=pkg.__description__,
+      long_description=open('README.rst').read(),
+      author=pkg.__author__,
+      author_email=pkg.__author_email__,
+      packages=['dmsclient', 'dmsclient.core'],
       install_requires=[
           'docopt>=0.6.0',
           'requests>=2.18.0',
