@@ -10,7 +10,7 @@ Getting Started
 Prerequisites
 -------------
 
-You need python 3.4 or newer with ``pip``.
+You need ``python 3.5`` or newer and ``pip``.
 For development you also need git installed on your machine.
 
 Installation

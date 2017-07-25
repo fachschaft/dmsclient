@@ -20,7 +20,8 @@ from distutils.util import strtobool
 from docopt import docopt
 from tabulate import tabulate
 
-from dmsclient import DMSClient, __version__
+from dmsclient import DMSClient
+from dmsclient import __version__
 
 
 def print_users(users):
