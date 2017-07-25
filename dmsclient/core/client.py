@@ -51,11 +51,12 @@ class DMSClient:
             num_days = ''
         else:
             assert isinstance(num_days, int)
-        return self._construct_sale_entries(self._get(f'/sale/{num_days}'))
+        return self._construct_sale_entries(
+            self._get('/sale/{}'.format(num_days)))
 
     def profile_by_id(self, id):
         assert isinstance(id, int) or id == 'current'
-        profile = self._get(f'/profiles/{id}', Profile)
+        profile = self._get('/profiles/{}'.format(id), Profile)
         if id == 'current':  # Workaround for mistake in api
             return profile[0]
         else:
@@ -63,7 +64,7 @@ class DMSClient:
 
     def product_by_id(self, id):
         assert isinstance(id, int)
-        return self._get(f'/products/{id}', Product)
+        return self._get('/products/{}'.format(id), Product)
 
     def add_order(self, product_id, profile_id=None):
         assert isinstance(product_id, int)
