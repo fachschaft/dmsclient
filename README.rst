@@ -88,12 +88,12 @@ Example code:
 Authors
 =======
 
-* *David-Elias Künstle* <kuenstld[at]tf.uni-freiburg> / `Github<https://github.com/dekuenstle>`_
+* *David-Elias Künstle* <kuenstld[at]tf.uni-freiburg> / `Github <https://github.com/dekuenstle>`_
 
 License
 =======
 
-dmsclient is available under the `MIT License<https://opensource.org/licenses/MIT>`_
+dmsclient is available under the `MIT License <https://opensource.org/licenses/MIT>`_
 
 Acknowledgements
 ================
