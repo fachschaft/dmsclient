@@ -109,7 +109,8 @@ def search_interactive(query, choices):
 
 def search_profile_interactive(dms, user_query):
     profiles = [u for u in dms.profiles if u.allowed_buy]
-    user_names = [u.name for u in profiles]
+    user_names = ["{} {} {}".format(u.first_name, u.last_name, u.user_name)
+                  for u in profiles]
     user_index = search_interactive(user_query, user_names)
     return profiles[user_index]
 
@@ -146,6 +147,8 @@ def _general_sale(dms, args, upper_type, function):
         user_name = user.name
     else:
         user_id = None
+
+    if user_id is None or user_id == dms.current_profile.id:
         user_name = 'yourself'
 
     if select_yes_no('{} {} ({:.2f}€) for {}?'
