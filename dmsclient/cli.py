@@ -5,6 +5,7 @@ Usage:
   dms order <product>... [--user=<user>]
   dms buy <product>... [--user=<user>]
   dms comment <text>... [--user=<user>]
+  dms setup completion
   dms (-h | --help)
   dms --version
 
@@ -19,6 +20,7 @@ from distutils.util import strtobool
 
 from docopt import docopt
 from tabulate import tabulate
+from infi.docopt_completion.docopt_completion import docopt_completion
 
 from dmsclient import DMSClient
 from dmsclient import __version__
@@ -203,5 +205,8 @@ def main():
         buy(dms, args)
     elif args['comment']:
         comment(dms, args)
+    elif args['setup'] and args['completion']:
+        docopt_completion('dms')
+        print('-> start a new shell to test completion')
     else:
         raise NotImplementedError()
