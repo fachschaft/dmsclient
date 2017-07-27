@@ -2,9 +2,9 @@
 
 Usage:
   dms show (user|users|orders|sale|products|events|comments)
-  dms order <product> [--user=<user>]
-  dms buy <product> [--user=<user>]
-  dms comment <text> [--user=<user>]
+  dms order <product>... [--user=<user>]
+  dms buy <product>... [--user=<user>]
+  dms comment <text>... [--user=<user>]
   dms (-h | --help)
   dms --version
 
@@ -126,7 +126,7 @@ def select_yes_no(question, default_yes=True):
 
 
 def _general_sale(dms, args, upper_type, function):
-    product_query = args['<product>']
+    product_query = ' '.join(args['<product>'])
     products = [p for p in dms.products if p.quantity > 0]
     product_names = [p.name for p in products]
     product_index = search_interactive(product_query, product_names)
@@ -161,7 +161,7 @@ def buy(dms, args):
 
 
 def comment(dms, args):
-    text = args['<text>']
+    text = ' '.join(args['<text>'])
     user_id = None
     user_query = args['--user']
     if user_query is not None:
