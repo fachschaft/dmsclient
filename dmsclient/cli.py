@@ -1,7 +1,8 @@
 """Drink Management System Client.
 
 Usage:
-  dms show (user|users|orders|sale|products|events|comments)
+  dms show (user|users|orders|products|events|comments)
+  dms show sale [--days=<days>]
   dms order <product>... [--user=<user>]
   dms buy <product>... [--user=<user>]
   dms comment <text>... [--user=<user>]
@@ -12,7 +13,8 @@ Usage:
 Options:
   -h --help         Show this screen.
   --version         Show version.
-  -u --user=<user>  DMS user.
+  -u --user=<user>  (Partial) user's name. E.g. 'stef' for 'Stefan'
+  --days=<days>     Number of days to show [default: 1].
 """
 import os
 import configparser
@@ -71,7 +73,8 @@ def show(dms, args):
     elif args['orders']:
         print_sale_entries(dms, dms.orders)
     elif args['sale']:
-        print_sale_entries(dms, dms.sale_history(3))
+        days = int(args['--days'])
+        print_sale_entries(dms, dms.sale_history(days))
     elif args['products']:
         print_products(dms.products)
     elif args['comments']:
