@@ -30,9 +30,11 @@ class Product:
 
 
 class SaleEntry:
-    def __init__(self, profile, product):
+    def __init__(self, id, profile, product, date):
+        self.id = id
         self.profile = profile
         self.product = product
+        self.date = date
 
 
 class Event:

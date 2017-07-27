@@ -32,14 +32,16 @@ def print_users(users):
               "({})".format(user.user_name),
               user.allowed_buy)
              for user in users)
-    print(tabulate(sorted(table), headers=['First Name', 'Last Name', 'User Name', 'Allowed to Buy']))
+    print(tabulate(sorted(table), headers=['First Name', 'Last Name',
+                                           'User Name', 'Allowed to Buy']))
 
 
 def print_sale_entries(dms, sale_entries):
-    table = ((se.product.name,
+    table = ((se.date.strftime('%d.%m.%Y %H:%M'),
+              se.product.name,
               se.profile.name)
              for se in sale_entries)
-    print(tabulate(sorted(table), headers=['Product', 'Profile']))
+    print(tabulate(sorted(table, reverse=True), headers=['Date', 'Product', 'Profile']))
 
 
 def print_products(products):

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import requests
 from dmsclient.core.objects import Profile, Product, Comment, Event, SaleEntry
 
@@ -10,8 +12,12 @@ class DMSClient:
     def _construct_sale_entries(self, dicts):
         profiles = {p.id: p for p in self.profiles}
         products = {p.id: p for p in self.products}
-        return [SaleEntry(profile=profiles[d['profile']],
-                          product=products[d['product']]) for d in dicts]
+        return [SaleEntry(id=d['id'],
+                          profile=profiles[d['profile']],
+                          product=products[d['product']],
+                          date=datetime.strptime(d['date'],
+                                                 '%Y-%m-%dT%H:%M:%S.%f'))
+                for d in dicts]
 
     def _construct_comments(self, dicts):
         profiles = {p.id: p for p in self.profiles}
