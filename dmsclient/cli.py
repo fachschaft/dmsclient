@@ -17,6 +17,7 @@ Options:
   --days=<days>     Number of days to show [default: 1].
 """
 import os
+import re
 import configparser
 from distutils.util import strtobool
 
@@ -86,8 +87,10 @@ def show(dms, args):
 
 
 def search_interactive(query, choices):
-    query = query.lower()
-    choices = [(i, c) for i, c in enumerate(choices) if query in c.lower()]
+    regex = re.compile(query.replace("*", ".*").replace(" ", ".*"),
+                       re.IGNORECASE | re.DOTALL)
+    choices = [(i, c) for i, c in enumerate(choices)
+               if regex.search(c) is not None]
     if len(choices) > 5:
         print("Way too many like '{}' found.".format(query))
         exit(1)
