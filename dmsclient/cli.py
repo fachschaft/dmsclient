@@ -3,8 +3,7 @@
 Usage:
   dms show (user|users|orders|products|events|comments)
   dms show sale [--days=<days>]
-  dms order <product>... [--user=<user>]
-  dms buy <product>... [--user=<user>]
+  dms (order|buy) <product>... [--number=<n>] [--user=<user>] [--force]
   dms comment <text>... [--user=<user>]
   dms setup completion
   dms (-h | --help)
@@ -14,6 +13,8 @@ Options:
   -h --help         Show this screen.
   --version         Show version.
   -u --user=<user>  (Partial) user's name. E.g. 'stef' for 'Stefan'
+  -n --number=<n>   Number of bottles
+  -f --force        Don't ask for confirmation
   --days=<days>     Number of days to show [default: 1].
 """
 import os
@@ -154,12 +155,20 @@ def _general_sale(dms, args, upper_type, function):
     if user_id is None or user_id == dms.current_profile.id:
         user_name = 'yourself'
 
-    if select_yes_no('{} {} ({:.2f}€) for {}?'
-                     .format(upper_type,
-                             product.name,
-                             product.price_cent/100,
-                             user_name)):
-        function(product.id, user_id)
+    if args['--number'] is None:
+        number = 1
+    else:
+        number = int(args['--number'])
+
+    if (args['--force'] or
+        select_yes_no('{} {} {} ({:.2f}€) for {}?'
+                      .format(upper_type,
+                              number,
+                              product.name,
+                              product.price_cent/100,
+                              user_name))):
+        for i in range(number):
+            function(product.id, user_id)
         print("{} successful.".format(upper_type))
     else:
         print("Bye.")

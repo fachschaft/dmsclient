@@ -1,7 +1,7 @@
 from datetime import datetime
 
 import requests
-from dmsclient.core.objects import Profile, Product, Comment, Event, SaleEntry
+from dmsclient.core.models import Profile, Product, Comment, Event, SaleEntry
 
 
 class DMSClient:
