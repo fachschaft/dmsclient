@@ -49,8 +49,16 @@ def print_sale_entries(dms, sale_entries):
 
 
 def print_products(products):
+    def make_price(price):
+        """ Sometimes the price is not set. Do not fail in this case but return
+        Unknown
+        """
+        if price is None:
+            return "Unknown"
+        else:
+            return "{:.2f}€".format(price/100)
     table = ((product.name, product.quantity,
-              "{:.2f}€".format(product.price_cent/100))
+              make_price(product.price_cent))
              for product in products)
     print(tabulate(sorted(table), headers=['Name', 'Quantity', 'Price']))
 
