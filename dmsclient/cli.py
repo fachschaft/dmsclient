@@ -2,20 +2,20 @@
 
 Usage:
   dms show (user|users|orders|products|events|comments)
-  dms show sale [--days=<days>]
-  dms (order|buy) <product>... [--number=<n>] [--user=<user>] [--force]
-  dms comment <text>... [--user=<user>]
+  dms show [-d <d>] sale
+  dms (order|buy) [-f] [-n <n>] [-u <u>] <product>...
+  dms comment [-u <u>] <text>...
   dms setup completion
   dms (-h | --help)
   dms --version
 
 Options:
-  -h --help         Show this screen.
-  --version         Show version.
-  -u --user=<user>  (Partial) user's name. E.g. 'stef' for 'Stefan'
-  -n --number=<n>   Number of bottles
-  -f --force        Don't ask for confirmation
-  --days=<days>     Number of days to show [default: 1].
+  -d <days>, --days=<days>  Number of days to show [default: 1].
+  -f, --force               Don't ask for confirmation
+  -h, --help                Show this screen.
+  -n <n>, --number=<n>      Number of bottles
+  -u <user>, --user=<user>  (Partial) user's name. E.g. 'stef' for 'Stefan'
+  --version                 Show version.
 """
 import os
 import re
@@ -104,7 +104,7 @@ def search_interactive(query, choices):
         print("Way too many like '{}' found.".format(query))
         exit(1)
     elif len(choices) > 1:
-        for i, (ii, c) in enumerate(choices):
+        for i, (_, c) in enumerate(choices):
             print("({}) {}".format(i+1, c))
         choice_id = int(input("Please enter a number between 1 and {}: "
                               .format(len(choices)))) - 1
@@ -140,7 +140,7 @@ def select_yes_no(question, default_yes=True):
         return default_yes
     try:
         return strtobool(answer)
-    except ValueError as e:
+    except ValueError:
         print("Only answer with yes or no.")
         exit(1)
 
@@ -175,7 +175,7 @@ def _general_sale(dms, args, upper_type, function):
                               product.name,
                               product.price_cent/100,
                               user_name))):
-        for i in range(number):
+        for _ in range(number):
             function(product.id, user_id)
         print("{} successful.".format(upper_type))
     else:
