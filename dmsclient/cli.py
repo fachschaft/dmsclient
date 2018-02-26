@@ -51,7 +51,7 @@ def print_sale_entries(dms, sale_entries):
 def print_products(products):
     table = ((product.name, product.quantity,
               "{:.2f}€".format(product.price_cent/100))
-             for product in products)
+             for product in products if product.price_cent is not None)
     print(tabulate(sorted(table), headers=['Name', 'Quantity', 'Price']))
 
 
@@ -230,3 +230,6 @@ def main():
         print('-> start a new shell to test completion')
     else:
         raise NotImplementedError()
+
+if __name__ == "__main__":
+    main()
