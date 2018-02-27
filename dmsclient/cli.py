@@ -58,13 +58,8 @@ def print_products(products):
         else:
             return "{:.2f}€".format(price/100)
     table = ((product.name, product.quantity,
-<<<<<<< HEAD
               make_price(product.price_cent))
              for product in products)
-=======
-              "{:.2f}€".format(product.price_cent/100))
-             for product in products if product.price_cent is not None)
->>>>>>> c458366afb743c087aaa49265e7856ea8c82cc91
     print(tabulate(sorted(table), headers=['Name', 'Quantity', 'Price']))
 
 
