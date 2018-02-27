@@ -22,11 +22,12 @@ class Profile:
 
 
 class Product:
-    def __init__(self, id, name, quantity, price_cent):
+    def __init__(self, id, name, quantity, price_cent, displayed):
         self.id = id
         self.name = name
         self.quantity = quantity
         self.price_cent = price_cent
+        self.displayed = displayed
 
 
 class SaleEntry:
