@@ -1,12 +1,18 @@
-from datetime import datetime
-
 import requests
-from dmsclient.core.models import Profile, Product, Comment, Event, SaleEntry
+
+from datetime import datetime
+from .models import Profile, Product, Comment, Event, SaleEntry
+
+__all__ = ['DmsClient']
 
 
-class DMSClient:
+class DmsClient:
     def __init__(self, token, api_endpoint):
-        self.token = token
+        if token and len(token) > 1:
+            self.token = token
+        else:
+            raise ValueError('Please provide a valid token.')
+
         self.api_endpoint = api_endpoint
 
     def _construct_sale_entries(self, dicts):

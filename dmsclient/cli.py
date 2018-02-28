@@ -20,14 +20,12 @@ Options:
 import os
 import re
 import configparser
+import dmsclient as dms
 from distutils.util import strtobool
 
 from docopt import docopt
 from tabulate import tabulate
 from infi.docopt_completion.docopt_completion import docopt_completion
-
-from dmsclient import DMSClient
-from dmsclient import __version__
 
 
 def print_users(users):
@@ -45,7 +43,11 @@ def print_sale_entries(dms, sale_entries):
               se.product.name,
               se.profile.name)
              for se in sale_entries)
-    print(tabulate(sorted(table, reverse=True), headers=['Date', 'Product', 'Profile']))
+    print(tabulate(
+        sorted(
+            table,
+            reverse=True),
+        headers=['Date', 'Product', 'Profile']))
 
 
 def print_products(products):
@@ -200,39 +202,44 @@ def comment(dms, args):
     print("Comment successful.")
 
 
-def load_token():
+def load_config():
     rcfile = os.path.expanduser('~/.dmsrc')
-    token = None
-    if os.path.isfile(rcfile):
-        config = configparser.ConfigParser()
-        config.read(rcfile)
-        section = config['DEFAULT']
-        if section:
-            token = section['Token']
 
-    if token:
-        return token
-    else:
-        print('Expected token in file {} with content:'.format(rcfile))
-        print('```\n[DEFAULT]\nToken = XxXXxxXXxXXxXX\n```')
-        print('You can generate the token in the DMS account settings.')
-        exit(1)
+    config = dms.DmsConfig()
+    status = config.read(rcfile)
+    if status == dms.ReadStatus.NOT_FOUND:
+        print('Expected config at {}'. format(rcfile))
+        if select_yes_no('Generate?'):
+            print('Please enter your token:')
+            print('(https://drinks.fachschaft.tf > MyAccount > REST Token)')
+            config.set(dms.Sec.GENERAL, 'token', input())
+            print('Generating...')
+            config.write(rcfile)
+        else:
+            print('Bye.')
+            exit(1)
+    elif status == dms.ReadStatus.OUTDATED:
+        print('Found config at {}'. format(rcfile))
+        print('New version of config available.')
+        if select_yes_no('Update config (recommended)?'):
+            print('Updating...')
+            config.write(rcfile)
+    return config
 
 
 def main():
-    args = docopt(__doc__, version='dmsclient {}'.format(__version__))
-    token = load_token()
-    api_endpoint = 'https://dms.fachschaft.tf/api'
-    dms = DMSClient(token, api_endpoint)
+    args = docopt(__doc__, version='dmsclient {}'.format(dms.__version__))
+    config = load_config()
+    client = dms.DmsClient(config.token, config.api)
 
     if args['show']:
-        show(dms, args)
+        show(client, args)
     elif args['order']:
-        order(dms, args)
+        order(client, args)
     elif args['buy']:
-        buy(dms, args)
+        buy(client, args)
     elif args['comment']:
-        comment(dms, args)
+        comment(client, args)
     elif args['setup'] and args['completion']:
         docopt_completion('dms')
         print('-> start a new shell to test completion')

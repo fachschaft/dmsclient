@@ -1,9 +1,9 @@
 try:
-    from dmsclient.core.client import DMSClient
+    from dmsclient.core import *
 except ImportError as e:
     pass
 
 __version__ = '1.3.1'
 __author__ = 'David-Elias Künstle'
-__author_email__ = 'dmsclient' + chr(64) + 'kuenstle.me' # hide of dumb email crawler
+__author_email__ = 'dmsclient' + chr(64) + 'kuenstle.me'  # hide of dumb email crawler
 __description__ = 'Library and command line interface to interact with Drink Management System of Fachschaft TF Uni Freiburg.'
