@@ -60,16 +60,16 @@ User and product names don't have to be added exactly, but are estimated from wh
 Library
 -------
 
-For communication with the DMS via REST you can use the ``DMSClient`` class provided by this library.
+For communication with the DMS via REST you can use the ``DmsClient`` class provided by this library.
 Authentication is provided via a token key which you can generate in the DMS profile settings.
-The ``DMSClient`` usually returns deep objects where ids were replaced by the corresponding object.
+The ``DmsClient`` usually returns deep objects where ids were replaced by the corresponding object.
 
 Example code:
 
 .. code:: python
 
    from random import sample
-   from dmsclient import DMSClient
+   from dmsclient import DmsClient
 
 
    def order_random_stuff_for_last_customer(dms):
@@ -82,13 +82,14 @@ Example code:
 
    token = 'XxxxxXXXxxxxxXXXXxxxxxxxXXX'
    api_endpoint = 'https://dms.fachschaft.tf/api'
-   dms = DMSClient(token, api_endpoint)
+   dms = DmsClient(token, api_endpoint)
    order_random_stuff_for_last_customer(dms)
 
 Authors
 =======
 
-* *David-Elias Künstle* <kuenstld[at]tf.uni-freiburg> / `Github <https://github.com/dekuenstle>`_
+Initiated by *David-Elias Künstle* <kuenstld[at]tf.uni-freiburg> / `Github <https://github.com/dekuenstle>`_
+but see [contributors](https://github.com/fachschaft/dmsclient/graphs/contributors) for a full list of contributions.
 
 License
 =======
