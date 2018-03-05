@@ -89,7 +89,7 @@ Authors
 =======
 
 Initiated by *David-Elias Künstle* <kuenstld[at]tf.uni-freiburg> / `Github <https://github.com/dekuenstle>`_
-but see `contributors <https://github.com/fachschaft/dmsclient/graphs/contributors`_ for a full list of contributions.
+but see `contributors <https://github.com/fachschaft/dmsclient/graphs/contributors>`_ for a full list of contributions.
 
 License
 =======
