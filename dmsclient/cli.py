@@ -2,7 +2,7 @@
 
 Usage:
   dms show (user|users|orders|products|events|comments)
-  dms show [-d <d>] sale
+  dms show [-d <d>] sales
   dms (order|buy) [-f] [-n <n>] [-u <u>] <product>...
   dms comment [-u <u>] <text>...
   dms setup completion
@@ -17,6 +17,7 @@ Options:
   -u <user>, --user=<user>  (Partial) user's name. E.g. 'stef' for 'Stefan'
   --version                 Show version.
 """
+import asyncio
 import os
 import re
 import configparser
@@ -32,13 +33,15 @@ def print_users(users):
     table = ((user.first_name,
               user.last_name,
               "({})".format(user.user_name),
-              user.allowed_buy)
+              user.allowed_buy,
+              "X" if user.is_current else "")
              for user in users)
     print(tabulate(sorted(table), headers=['First Name', 'Last Name',
-                                           'User Name', 'Allowed to Buy']))
+                                           'User Name', 'Allowed to Buy',
+                                           'Current']))
 
 
-def print_sale_entries(dms, sale_entries):
+def print_sale_entries(sale_entries):
     table = ((se.date.strftime('%d.%m.%Y %H:%M'),
               se.product.name,
               se.profile.name)
@@ -65,7 +68,7 @@ def print_products(products):
     print(tabulate(sorted(table), headers=['Name', 'Quantity', 'Price']))
 
 
-def print_comments(dms, comments):
+def print_comments(comments):
     table = ((comment.profile.name, comment.comment)
              for comment in comments)
     print(tabulate(sorted(table), headers=['Profile', 'Text']))
@@ -77,22 +80,41 @@ def print_events(events):
     print(tabulate(sorted(table), headers=['Name', 'Price Group', 'Active']))
 
 
-def show(client, args):
+async def show(loop, client, args):
     if args['user']:
-        print_users([client.current_profile])
+        print_users([await client.current_profile])
     elif args['users']:
-        print_users(client.profiles)
+        print_users(await client.profiles)
     elif args['orders']:
-        print_sale_entries(client, client.orders)
-    elif args['sale']:
+        orders = loop.create_task(client.orders)
+        profiles = loop.create_task(client.profiles)
+        products = loop.create_task(client.products)
+        print_sale_entries(
+            dms.construct_sale_entries(
+                await orders,
+                await profiles,
+                await products))
+    elif args['sales']:
         days = int(args['--days'])
-        print_sale_entries(client, client.sale_history(days))
+        sales = loop.create_task(client.sale_history(days))
+        profiles = loop.create_task(client.profiles)
+        products = loop.create_task(client.products)
+        print_sale_entries(
+            dms.construct_sale_entries(
+                await sales,
+                await profiles,
+                await products))
     elif args['products']:
-        print_products(client.products)
+        print_products(await client.products)
     elif args['comments']:
-        print_comments(client, client.comments)
+        comments = loop.create_task(client.comments)
+        profiles = loop.create_task(client.profiles)
+        print_comments(
+            dms.construct_comments(
+                await comments,
+                await profiles))
     elif args['events']:
-        print_events(client.events)
+        print_events(await client.events)
     else:
         raise NotImplementedError()
 
@@ -138,35 +160,38 @@ def select_element(choices, query, accessor=None):
         exit(1)
 
 
-def _query_products(client, product_query, aliases):
+async def _query_products(client, query, aliases):
     try:
-        prod_num = int(product_query)
-        products = [client.product_by_id(prod_num)]
+        prod_id = int(query)
+        products = [await client.product_by_id(prod_id)]
     except ValueError:
-        products = dms.search_product(client, product_query, aliases)
-    except Exception:
-        products = []
+        products = dms.search_product(query, await client.products, aliases)
 
     return products
 
+async def _query_profiles(client, query):
+    try:
+        if query is None:
+            users = [await client.current_profile]
+        else:
+            user_id = int(query)
+            users = [await client.profile_by_id(user_id)]
+    except ValueError:
+        users = dms.search_profile(query, await client.profiles)
 
-def _general_sale(client, args, product, upper_type, function):
-    user_query = args['--user']
-    if user_query is not None:
-        u_choices = dms.search_profile(client, user_query)
-        user = select_element(u_choices, user_query, lambda x: x.name)
-        user_id = user.id
-        user_name = user.name
-    else:
-        user_id = None
+    return users
 
-    if user_id is None or user_id == client.current_profile.id:
-        user_name = 'yourself'
 
+async def _general_sale(args, product, profile, upper_type, function):
     if args['--number'] is None:
         number = 1
     else:
         number = int(args['--number'])
+
+    if profile.is_current:
+        user_name = 'yourself'
+    else:
+        user_name = profile.name
 
     if (args['--force'] or
         select_yes_no('{} {} {} ({:.2f}€) for {}?'
@@ -175,17 +200,22 @@ def _general_sale(client, args, product, upper_type, function):
                               product.name,
                               product.price_cent/100,
                               user_name))):
-        for _ in range(number):
-            function(product.id, user_id)
+        await asyncio.gather(
+            *[function(product.id, profile.id) for _ in range(number)])
         print("{} successful.".format(upper_type))
     else:
         print("Bye.")
 
 
-def order(client, aliases, args):
-    product_query = ' '.join(args['<product>'])
-    products = _query_products(client, product_query, aliases)
+async def order(loop, client, aliases, args):
+    prod_query = ' '.join(args['<product>'])
+    user_query = args['--user']
+    products_req = loop.create_task(
+        _query_products(client, prod_query, aliases))
+    profiles_req = loop.create_task(
+        _query_profiles(client, user_query))
 
+    products = await products_req
     filtered = [p for p in products if p.quantity > 0]
 
     if len(filtered) == 0 and len(products) != 0:
@@ -193,27 +223,51 @@ def order(client, aliases, args):
         print("Sold out: {0}".format(", ".join(prod_names)))
         return
     else:
-        product = select_element(filtered, product_query, lambda x: x.name)
+        product = select_element(filtered, prod_query, lambda x: x.name)
 
-    _general_sale(client, args, product, 'Order', client.add_order)
+    users = await profiles_req
+    if len(users) == 1:
+        user = users[0]
+    else:
+        user = select_element(users, user_query, lambda x: x.name)
 
-
-def buy(client, aliases, args):
-    product_query = ' '.join(args['<product>'])
-    products = _query_products(client, product_query, aliases)
-
-    product = select_element(products, product_query, lambda x: x.name)
-    _general_sale(client, args, product, 'Buy', client.add_sale)
+    await _general_sale(args, product, user, 'Order', client.add_order)
 
 
-def comment(client, args):
-    text = ' '.join(args['<text>'])
-    user_id = None
+async def buy(loop, client, aliases, args):
+    prod_query = ' '.join(args['<product>'])
     user_query = args['--user']
-    if user_query is not None:
-        u_choices = dms.search_profile(client, user_query)
-        user_id = select_element(u_choices, user_query, lambda x: x.name).id
-    client.add_comment(text, user_id)
+    products_req = loop.create_task(
+        _query_products(client, prod_query, aliases))
+    profiles_req = loop.create_task(
+        _query_profiles(client, user_query))
+
+    products = await products_req
+    if len(products) == 1:
+        product = products[0]
+    else:
+        product = select_element(products, prod_query, lambda x: x.name)
+
+    users = await profiles_req
+    if len(users) == 1:
+        user = users[0]
+    else:
+        user = select_element(users, user_query, lambda x: x.name)
+
+    await _general_sale(args, product, user, 'Buy', client.add_sale)
+
+
+async def comment(client, args):
+    text = ' '.join(args['<text>'])
+    user_query = args['--user']
+    users = await _query_profiles(client, user_query)
+
+    if len(users) == 1:
+        user = users[0]
+    else:
+        user = select_element(users, user_query, lambda x: x.name)
+
+    await client.add_comment(text, user.id)
     print("Comment successful.")
 
 
@@ -242,24 +296,30 @@ def load_config():
     return config
 
 
-def main():
+async def async_main(loop):
     args = docopt(__doc__, version='dmsclient {}'.format(dms.__version__))
     config = load_config()
-    client = dms.DmsClient(config.token, config.api)
 
-    if args['show']:
-        show(client, args)
-    elif args['order']:
-        order(client, config.aliases, args)
-    elif args['buy']:
-        buy(client, config.aliases, args)
-    elif args['comment']:
-        comment(client, args)
-    elif args['setup'] and args['completion']:
-        docopt_completion('dms')
-        print('-> start a new shell to test completion')
-    else:
-        raise NotImplementedError()
+    async with dms.DmsClient(config.token, config.api) as client:
+        if args['show']:
+            await show(loop, client, args)
+        elif args['order']:
+            await order(loop, client, config.aliases, args)
+        elif args['buy']:
+            await buy(loop, client, config.aliases, args)
+        elif args['comment']:
+            await comment(client, args)
+        elif args['setup'] and args['completion']:
+            docopt_completion('dms')
+            print('-> start a new shell to test completion')
+        else:
+            raise NotImplementedError()
+
+
+def main():
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(async_main(loop))
+
 
 if __name__ == "__main__":
     main()
