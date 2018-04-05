@@ -12,6 +12,7 @@ setup(name='dmsclient',
       author_email=pkg.__author_email__,
       packages=['dmsclient', 'dmsclient.core'],
       install_requires=[
+          'aiohttp>=3.1.1',
           'docopt>=0.6.0',
           'requests>=2.18.0',
           'tabulate>=0.7.0',

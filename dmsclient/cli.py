@@ -274,6 +274,7 @@ async def comment(client, args):
 def load_config():
     rcfile = os.path.expanduser('~/.dmsrc')
 
+    dir(dms)
     config = dms.DmsConfig()
     status = config.read(rcfile)
     if status == dms.ReadStatus.NOT_FOUND:
