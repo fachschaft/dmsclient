@@ -62,28 +62,71 @@ Library
 
 For communication with the DMS via REST you can use the ``DmsClient`` class provided by this library.
 Authentication is provided via a token key which you can generate in the DMS profile settings.
-The ``DmsClient`` usually returns deep objects where ids were replaced by the corresponding object.
-
-Example code:
+Usually the token is stored in an RC file readable with ``DmsConfig``.
 
 .. code:: python
 
-   from random import sample
-   from dmsclient import DmsClient
+    import os
+    from random import sample
+
+    from dmsclient import DmsClient, DmsConfig
 
 
-   def order_random_stuff_for_last_customer(dms):
-       available_products = (p for p in dms.products if p.quantity > 0)
-       random_product = sample(available_products, 1)[0]
-       last_sale = dms.sale_history(num_days=1)[0]
-
-       dms.add_order(random_product.id, last_sale.profile.id)
+    rcfile = os.path.expanduser('~/.dmsrc')
+    cfg = DmsConfig()
+    cfg.read(rcfile)
 
 
-   token = 'XxxxxXXXxxxxxXXXXxxxxxxxXXX'
-   api_endpoint = 'https://dms.fachschaft.tf/api'
-   dms = DmsClient(token, api_endpoint)
-   order_random_stuff_for_last_customer(dms)
+API functions of ``DmsClient`` usually return coroutines for asynchronous access.
+
+.. code:: python
+
+    import asyncio
+
+
+    async def async_order_random_stuff_for_last_customer(loop, cfg):
+        async with DmsClient(cfg.token, cfg.api) as dms:
+           # register tasks which can run in parallel
+           products_task = loop.create_task(dms.products)
+           sales_task = loop.create_task(dms.sale_history(num_days=1))
+
+           # execute tasks to fetch data in parallel
+           available_products = [p for p in await products_task
+                                 if p.quantity > 0]
+           random_product = sample(available_products, 1)[0]
+           last_sale = (await sales_task)[0]
+
+           # order random product
+           await dms.add_order(random_product.id, last_sale['profile'])
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(async_order_random_stuff_for_last_customer(loop, cfg))
+
+
+Still, you can use the library also in a synchronous fassion
+
+.. code:: python
+
+   from syncer import sync
+
+
+   @sync
+   async def order_random_stuff_for_last_customer(cfg):
+       async with DmsClient(cfg.token, cfg.api) as dms:
+           # synchronous fetch data
+           products = await dms.products
+           sales = await dms.sale_history(num_days=1)
+
+           available_products = [p for p in products
+                                 if p.quantity > 0]
+           random_product = sample(available_products, 1)[0]
+           last_sale = sales[0]
+
+           # order random product
+           await dms.add_order(random_product.id, last_sale['profile'])
+
+
+   order_random_stuff_for_last_customer(cfg)
 
 Authors
 =======
