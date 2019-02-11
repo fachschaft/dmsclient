@@ -6,15 +6,15 @@ Python3 library with command line interface to interact with the Drink Managemen
 
 Example use case: Order product from the command line.
 
-```
-$ dms order spezi -u johann
-(1) Johannes Mustermann
-(2) Johanna  Musterfrau
-(3) Johann   Mustermensch
-Please enter a number between 1 and 3: 1
-Order 1 NetteMarke Spezi (0.70€) for Johannes Mustermann? [YES/no] y 
-Order successful.
-```
+.. code:: bash
+
+    $ dms order spezi -u johann
+    (1) Johannes Mustermann
+    (2) Johanna  Musterfrau
+    (3) Johann   Mustermensch
+    Please enter a number between 1 and 3: 1
+    Order 1 NetteMarke Spezi (0.70€) for Johannes Mustermann? [YES/no] y 
+    Order successful.
 
 Getting Started
 ===============
