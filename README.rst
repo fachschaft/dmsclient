@@ -115,7 +115,7 @@ API functions of ``DmsClient`` usually return coroutines for asynchronous access
     loop.run_until_complete(async_order_random_stuff_for_last_customer(loop, cfg))
 
 
-Still, you can use the library also in a synchronous fassion
+Still, you can use the library also in a synchronous fashion
 
 .. code:: python
 
@@ -139,6 +139,20 @@ Still, you can use the library also in a synchronous fassion
 
 
    order_random_stuff_for_last_customer(cfg)
+
+Alternative:
+
+.. code:: python
+
+    loop = asyncio.get_event_loop()
+
+    # Connect synchronously
+    client = dms.DmsClient(cfg.token, cfg.api)
+    client.connect()
+
+    # Read products
+    products = loop.run_until_complete(client.products)
+
 
 Authors
 =======

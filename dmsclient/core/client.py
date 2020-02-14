@@ -1,4 +1,5 @@
 import aiohttp
+import asyncio
 import requests
 
 from datetime import datetime
@@ -16,15 +17,26 @@ class DmsClient:
 
         self.api_endpoint = api_endpoint
 
-    async def __aenter__(self):
+    def connect(self):
         self.session = aiohttp.ClientSession(
             headers={
                 'Authorization': 'Token ' + self.token,
                 'Content-type': 'application/json'})
+
+    def disconnect(self):
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(self._disconnect())
+
+    async def _disconnect(self):
+        if self.session:
+            await self.session.close()
+
+    async def __aenter__(self):
+        self.connect()
         return self
 
     async def __aexit__(self, *args):
-        await self.session.close()
+        await self._disconnect()
 
     @property
     async def profiles(self):
