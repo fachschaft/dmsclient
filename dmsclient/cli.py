@@ -299,6 +299,12 @@ def load_config():
 
 async def async_main(loop):
     args = docopt(__doc__, version='dmsclient {}'.format(dms.__version__))
+
+    if args['setup'] and args['completion']:
+        docopt_completion('dms')
+        print('-> start a new shell to test completion')
+        exit(0)
+
     config = load_config()
 
     async with dms.DmsClient(config.token, config.api) as client:
@@ -310,9 +316,6 @@ async def async_main(loop):
             await buy(loop, client, config.aliases, args)
         elif args['comment']:
             await comment(client, args)
-        elif args['setup'] and args['completion']:
-            docopt_completion('dms')
-            print('-> start a new shell to test completion')
         else:
             raise NotImplementedError()
 
